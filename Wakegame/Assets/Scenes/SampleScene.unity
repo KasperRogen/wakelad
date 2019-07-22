@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 2138677392}
-  m_IndirectSpecularColor: {r: 0.28502667, g: 0.37139323, b: 0.49600998, a: 1}
+  m_IndirectSpecularColor: {r: 0.2850269, g: 0.3713935, b: 0.49601045, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -132,7 +132,7 @@ GameObject:
   - component: {fileID: 62495469}
   m_Layer: 0
   m_Name: Kicker
-  m_TagString: Untagged
+  m_TagString: Kicker
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -144,8 +144,8 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 62495468}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.4352404, y: 0.33516076, z: 0.7176013}
+  m_LocalRotation: {x: -0, y: -0.2040975, z: -0, w: 0.9789506}
+  m_LocalPosition: {x: 0.47, y: 0.33516076, z: -2.45}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 498496918}
@@ -155,7 +155,7 @@ Transform:
   - {fileID: 1116048345}
   m_Father: {fileID: 0}
   m_RootOrder: 5
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: -23.553001, z: 0}
 --- !u!1 &196429948
 GameObject:
   m_ObjectHideFlags: 0
@@ -170,7 +170,7 @@ GameObject:
   - component: {fileID: 196429949}
   m_Layer: 0
   m_Name: Cube (1)
-  m_TagString: Untagged
+  m_TagString: Kicker
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -309,10 +309,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   speed: 6
   steerSpeed: 6
-  ropeLength: 2
+  ropeLength: 3
   dampeningMask:
     serializedVersion: 2
     m_Bits: 16
+  PlayerState: 0
+  grounded: 0
 --- !u!54 &203327514
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -343,7 +345,7 @@ GameObject:
   - component: {fileID: 319944416}
   m_Layer: 0
   m_Name: Cube (3)
-  m_TagString: Untagged
+  m_TagString: Kicker
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -464,7 +466,7 @@ GameObject:
   - component: {fileID: 498496915}
   m_Layer: 0
   m_Name: Cube
-  m_TagString: Untagged
+  m_TagString: Kicker
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -800,7 +802,7 @@ GameObject:
   - component: {fileID: 1116048342}
   m_Layer: 0
   m_Name: Cube (4)
-  m_TagString: Untagged
+  m_TagString: Kicker
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1049,7 +1051,7 @@ GameObject:
   - component: {fileID: 1817022826}
   m_Layer: 0
   m_Name: Cube (2)
-  m_TagString: Untagged
+  m_TagString: Kicker
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

@@ -5,6 +5,16 @@ using UnityEngine.UIElements;
 
 public class PlayerMovement : MonoBehaviour
 {
+    public enum PlayerStates
+    {
+        RIDING,
+        RAIL,
+        KICKER,
+        AERIAL
+    }
+
+
+
     [Header("Physics")]
     public float speed;
     public float steerSpeed;
@@ -13,6 +23,8 @@ public class PlayerMovement : MonoBehaviour
 
     public LayerMask dampeningMask;
 
+    public PlayerStates PlayerState = PlayerStates.RIDING;
+    public bool grounded;
 
 
     float allowedSidewaysDrift;
@@ -23,12 +35,9 @@ public class PlayerMovement : MonoBehaviour
 
     public bool IsGrounded()
     {
-        Debug.DrawRay(transform.position, Vector3.down * 0.5f, Color.red);
+        Debug.DrawRay(transform.position, Vector3.down * 0.6f, Color.red);
         RaycastHit hit;
-        bool grounded;
-        grounded = Physics.Raycast(transform.position, Vector3.down * 0.5f, out hit, dampeningMask);
-
-        Debug.Log(hit.collider.gameObject.name);
+        grounded = Physics.Raycast(transform.position, Vector3.down * 0.5f, out hit, 0.5f, dampeningMask);
 
         return grounded;
     }
@@ -39,13 +48,13 @@ public class PlayerMovement : MonoBehaviour
     {
         allowedSidewaysDrift = ropeLength * 0.75f;
         rb = GetComponent<Rigidbody>();
+        moveVector = rb.velocity;
     }
 
 
     void Move()
     {
-        moveVector = rb.velocity;
-        moveVector.z = speed;
+        moveVector.z = moveVector.z < speed ? speed : moveVector.z;
     }
 
     void Steer()
@@ -55,33 +64,29 @@ public class PlayerMovement : MonoBehaviour
 
     void Dampen()
     {
-        if (IsGrounded()) {
-            Debug.Log("GROUNDED!");
-            if(inputVector.x == 0)
+        if(inputVector.x == 0)
+        {
+            if(transform.position.x >= 1)
             {
-                if(transform.position.x >= 1)
-                {
-                    moveVector.x = -1;
-                } else if (transform.position.x <= -1)
-                {
-                    moveVector.x = 1;
-                }
-            } else if (inputVector.x > 0)
+                moveVector.x = -1;
+            } else if (transform.position.x <= -1)
             {
-                if(transform.position.x >= ropeLength * 0.75)
-                {
-                    moveVector.x += (ropeLength * 0.75f) - transform.position.x;
-                }
-            } else if (inputVector.x < 0)
+                moveVector.x = 1;
+            }
+        } else if (inputVector.x > 0)
+        {
+            if(transform.position.x >= ropeLength * 0.75)
             {
-                if (transform.position.x <= -ropeLength * 0.75)
-                {
-                    moveVector.x -= (ropeLength * 0.75f) - -transform.position.x;
-                }
+                moveVector.x += (ropeLength * 0.75f) - transform.position.x;
+            }
+        } else if (inputVector.x < 0)
+        {
+            if (transform.position.x <= -ropeLength * 0.75)
+            {
+                moveVector.x -= (ropeLength * 0.75f) - -transform.position.x;
             }
         }
 
-        rb.velocity = moveVector;
     }
 
     // Update is called once per frame
@@ -91,18 +96,57 @@ public class PlayerMovement : MonoBehaviour
         inputVector.x = Input.GetAxis("Horizontal");
         inputVector.z = Input.GetAxis("Vertical");
 
+        PlayerState = IsGrounded() ? PlayerStates.RIDING : PlayerStates.AERIAL;
 
         Move();
         Steer();
         Dampen();
 
-        transform.LookAt(transform.position + new Vector3(rb.velocity.x, 0, rb.velocity.z));
+        switch (PlayerState)
+        {
+            case PlayerStates.RIDING:
+                transform.LookAt(transform.position + new Vector3(rb.velocity.x, 0, rb.velocity.z));
+            break;
+
+            case PlayerStates.AERIAL:
+                transform.LookAt(transform.position + new Vector3(rb.velocity.x, 0, rb.velocity.z));
+            break;
+
+
+        }
+
+        rb.velocity = moveVector;
+        Debug.DrawRay(transform.position, moveVector, Color.black, 20);
     }
 
 
     private void OnGUI()
     {
         GUI.Label(new Rect(10, 10, 100, 20), rb.velocity.ToString());
+    }
+
+
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        if(collision.gameObject.tag == "Kicker")
+        {
+            Debug.DrawRay(transform.position, rb.velocity, Color.cyan, 20);
+            Vector3 velocity = moveVector;
+            Quaternion oldRot = transform.rotation;
+
+            ContactPoint hit = collision.contacts[0];
+            Debug.DrawRay(transform.position, -hit.normal, Color.green, 10);
+
+            PlayerState = PlayerStates.KICKER;
+
+            transform.rotation = Quaternion.FromToRotation(Vector3.up, hit.normal);
+            velocity = transform.forward * velocity.magnitude;
+            transform.rotation = oldRot;
+            moveVector = velocity;
+            Debug.DrawRay(transform.position, moveVector, Color.black, 20);
+
+        }
     }
 
 }
