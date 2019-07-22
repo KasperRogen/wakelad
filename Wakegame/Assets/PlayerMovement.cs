@@ -20,8 +20,7 @@ public class PlayerMovement : MonoBehaviour
     public float steerSpeed;
 
     public float ropeLength;
-
-    public LayerMask dampeningMask;
+    
     public LayerMask groundedMask;
 
     public PlayerStates PlayerState = PlayerStates.RIDING;
@@ -38,7 +37,7 @@ public class PlayerMovement : MonoBehaviour
     {
         Debug.DrawRay(transform.position, Vector3.down * 0.6f, Color.red);
         RaycastHit hit;
-        grounded = Physics.Raycast(transform.position, Vector3.down * 0.5f, out hit, 0.5f, groundedMask);
+        grounded = Physics.SphereCast(transform.position, 0.4f, Vector3.down, out hit, 0.6f, groundedMask);
 
         if(grounded == false)
         {
@@ -86,7 +85,7 @@ public class PlayerMovement : MonoBehaviour
 
             case PlayerStates.AERIAL:
                 moveVector.x = rb.velocity.x;
-                transform.RotateAround(transform.position, transform.up, inputVector.x * 10);
+                transform.RotateAround(transform.position, transform.up, inputVector.x * 360 * Time.deltaTime);
             break;
 
         }
@@ -139,8 +138,8 @@ public class PlayerMovement : MonoBehaviour
         Dampen();
 
 
-
-        transform.LookAt(transform.position + new Vector3(rb.velocity.x, 0, rb.velocity.z));
+        if(PlayerState == PlayerStates.RIDING)
+            transform.LookAt(transform.position + new Vector3(rb.velocity.x, 0, rb.velocity.z));
 
 
         if(moveVector != Vector3.zero)
