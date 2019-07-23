@@ -13,6 +13,17 @@ public class PlayerMovement : MonoBehaviour
         AERIAL
     }
 
+    public enum RidingStates
+    {
+        REGULAR,
+        GOOFY,
+        REGULAR_BLIND,
+        GOOFY_BLIND,
+        REGULAR_WRAPPED,
+        GOOFY_WRAPPED,
+        CRASHED
+    }
+
 
 
     [Header("Physics")]
@@ -24,6 +35,7 @@ public class PlayerMovement : MonoBehaviour
     public LayerMask groundedMask;
 
     public PlayerStates PlayerState = PlayerStates.RIDING;
+    public RidingStates RidingState = RidingStates.REGULAR;
     public bool grounded;
 
 
@@ -35,6 +47,7 @@ public class PlayerMovement : MonoBehaviour
 
     public bool IsGrounded()
     {
+        PlayerStates prevState = PlayerState;
         Debug.DrawRay(transform.position, Vector3.down * 0.6f, Color.red);
         RaycastHit hit;
         grounded = Physics.SphereCast(transform.position, 0.4f, Vector3.down, out hit, 0.6f, groundedMask);
@@ -45,6 +58,8 @@ public class PlayerMovement : MonoBehaviour
         }
         else if(hit.transform.gameObject.layer == LayerMask.NameToLayer("Water"))
         {
+            if (prevState == PlayerStates.AERIAL)
+                Land();
             PlayerState = PlayerStates.RIDING;
         }
         else if (hit.transform.gameObject.layer == LayerMask.NameToLayer("Kicker"))
@@ -59,7 +74,27 @@ public class PlayerMovement : MonoBehaviour
         return grounded && hit.transform.gameObject.layer == LayerMask.NameToLayer("Water");
     }
 
+    void Land()
+    {
+        Vector3 travelDirection = rb.velocity;
+        travelDirection.y = 0;
 
+        Vector3 lookDirection = transform.forward;
+        lookDirection.y = 0;
+
+        if(Vector3.Angle(travelDirection, lookDirection) < 30)
+        {
+            RidingState = RidingStates.REGULAR;
+        } else if (Vector3.Angle(travelDirection, -lookDirection) < 30)
+        {
+            RidingState = RidingStates.REGULAR_BLIND;
+        } else
+        {
+            RidingState = RidingStates.CRASHED;
+            Debug.Log("CRASH");
+            rb.constraints = RigidbodyConstraints.None;
+        }
+    }
 
     // Start is called before the first frame update
     void Start()
@@ -81,12 +116,18 @@ public class PlayerMovement : MonoBehaviour
         {
             case PlayerStates.RIDING:
                 moveVector.x = inputVector.x * steerSpeed;
+                moveVector.z += Mathf.Abs(inputVector.x * steerSpeed)* Time.deltaTime * 2f;
             break;
 
             case PlayerStates.AERIAL:
                 moveVector.x = rb.velocity.x;
                 transform.RotateAround(transform.position, transform.up, inputVector.x * 360 * Time.deltaTime);
             break;
+
+            case PlayerStates.KICKER:
+                moveVector.x = rb.velocity.x;
+                transform.RotateAround(transform.position, transform.up, inputVector.x * 360 * Time.deltaTime);
+                break;
 
         }
     }
@@ -123,6 +164,15 @@ public class PlayerMovement : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (Input.GetKeyDown(KeyCode.Q))
+        {
+            transform.position = new Vector3(0, 0.6f, -5);
+            rb.velocity = Vector3.zero;
+            RidingState = RidingStates.REGULAR;
+            PlayerState = PlayerStates.RIDING;
+            rb.constraints = RigidbodyConstraints.FreezeRotation;
+        }
+
         inputVector = Vector3.zero;
         inputVector.x = Input.GetAxis("Horizontal");
         inputVector.z = Input.GetAxis("Vertical");
@@ -133,13 +183,23 @@ public class PlayerMovement : MonoBehaviour
 
         
         IsGrounded();
+
+        if (RidingState == RidingStates.CRASHED)
+            return;
+
         Move();
         Steer();
         Dampen();
 
 
         if(PlayerState == PlayerStates.RIDING)
-            transform.LookAt(transform.position + new Vector3(rb.velocity.x, 0, rb.velocity.z));
+        {
+            if (RidingState == RidingStates.REGULAR)
+                transform.LookAt(transform.position + new Vector3(rb.velocity.x, 0, rb.velocity.z));
+            else if (RidingState == RidingStates.REGULAR_BLIND)
+                transform.LookAt(transform.position - new Vector3(rb.velocity.x, 0, rb.velocity.z));
+        }
+            
 
 
         if(moveVector != Vector3.zero)
